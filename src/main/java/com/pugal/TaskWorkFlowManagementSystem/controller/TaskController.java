@@ -1,14 +1,16 @@
 package com.pugal.TaskWorkFlowManagementSystem.controller;
 
-
-import com.pugal.TaskWorkFlowManagementSystem.model.Task;
+import com.pugal.TaskWorkFlowManagementSystem.dto.CreateTaskRequest;
+import com.pugal.TaskWorkFlowManagementSystem.dto.TaskResponse;
+import com.pugal.TaskWorkFlowManagementSystem.dto.UpdateTaskRequest;
 import com.pugal.TaskWorkFlowManagementSystem.service.TaskService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
+@CrossOrigin(origins = "*")
 @RestController
 @RequestMapping("/tasks")
 public class TaskController {
@@ -20,23 +22,24 @@ public class TaskController {
     }
 
     @PostMapping
-    public Task createTask(@RequestBody Task task) {
-        return taskService.createTask(task);
+    public TaskResponse createTask(@Valid @RequestBody CreateTaskRequest request) {
+        return taskService.createTask(request);
     }
 
     @GetMapping
-    public List<Task> getAllTasks() {
+    public List<TaskResponse> getAllTasks() {
         return taskService.getAllTasks();
     }
 
     @GetMapping("/{id}")
-    public Optional<Task> getTaskById(@PathVariable UUID id) {
+    public TaskResponse getTaskById(@PathVariable UUID id) {
         return taskService.getTaskById(id);
     }
 
     @PutMapping("/{id}")
-    public Task updateTask(@PathVariable UUID id, @RequestBody Task task) {
-        return taskService.updateTask(id, task);
+    public TaskResponse updateTask(@PathVariable UUID id,
+                                   @Valid @RequestBody UpdateTaskRequest request) {
+        return taskService.updateTask(id, request);
     }
 
     @DeleteMapping("/{id}")
