@@ -1,6 +1,11 @@
 package com.pugal.TaskWorkFlowManagementSystem.service;
 
+import com.pugal.TaskWorkFlowManagementSystem.dto.CreateTaskRequest;
+import com.pugal.TaskWorkFlowManagementSystem.dto.TaskResponse;
+import com.pugal.TaskWorkFlowManagementSystem.dto.UpdateTaskRequest;
 import com.pugal.TaskWorkFlowManagementSystem.enums.TaskStatus;
+import com.pugal.TaskWorkFlowManagementSystem.exception.InvalidTaskTransitionException;
+import com.pugal.TaskWorkFlowManagementSystem.exception.TaskNotFoundException;
 import com.pugal.TaskWorkFlowManagementSystem.model.Task;
 import com.pugal.TaskWorkFlowManagementSystem.model.TaskHistory;
 import com.pugal.TaskWorkFlowManagementSystem.repo.TaskHistoryRepository;
@@ -12,7 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -26,11 +30,12 @@ public class TaskService {
         this.taskHistoryRepository = taskHistoryRepository;
     }
 
-    public Task createTask(Task task) {
+    public TaskResponse createTask(CreateTaskRequest request) {
 
-        if (task.getTitle() == null || task.getTitle().isBlank()) {
-            throw new RuntimeException("Title is required");
-        }
+        Task task = new Task();
+        task.setTitle(request.getTitle());
+        task.setDescription(request.getDescription());
+        task.setPriority(request.getPriority());
 
         task.setStatus(TaskStatus.TODO);
         task.setCreatedAt(LocalDateTime.now());
@@ -44,7 +49,7 @@ public class TaskService {
         saveHistory(savedTask.getId(), "priority", savedTask.getPriority().name());
         saveHistory(savedTask.getId(), "status", savedTask.getStatus().name());
 
-        return savedTask;
+        return mapToResponse(savedTask);
     }
 
     private void saveHistory(UUID taskId, String field, String newValue) {
@@ -52,36 +57,53 @@ public class TaskService {
         taskHistoryRepository.save(history);
     }
 
-    public List<Task> getAllTasks() {
-        return taskRepository.findAll();
+    public List<TaskResponse> getAllTasks() {
+        return taskRepository.findAll()
+                .stream()
+                .map(this::mapToResponse)
+                .toList();
     }
 
-    public Optional<Task> getTaskById(UUID id) {
-        return taskRepository.findById(id);
+    public TaskResponse getTaskById(UUID id) {
+
+        Task task = taskRepository.findById(id)
+                .orElseThrow(() -> new TaskNotFoundException("Task not found"));
+
+        return mapToResponse(task);
     }
 
     @Transactional
-    public Task updateTask(UUID id, Task updatedTask) {
+    public TaskResponse updateTask(UUID id, UpdateTaskRequest request) {
 
         Task existingTask = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new TaskNotFoundException("Task not found"));
+
+        Task updatedTask = new Task();
+        updatedTask.setTitle(request.getTitle());
+        updatedTask.setDescription(request.getDescription());
+        updatedTask.setPriority(request.getPriority());
+        updatedTask.setStatus(request.getStatus());
 
         validateWorkflow(existingTask, updatedTask);
         trackChanges(existingTask, updatedTask);
 
-        existingTask.setTitle(updatedTask.getTitle());
-        existingTask.setDescription(updatedTask.getDescription());
-        existingTask.setPriority(updatedTask.getPriority());
-        existingTask.setStatus(updatedTask.getStatus());
+        existingTask.setTitle(request.getTitle());
+        existingTask.setDescription(request.getDescription());
+        existingTask.setPriority(request.getPriority());
+        existingTask.setStatus(request.getStatus());
         existingTask.setUpdatedAt(LocalDateTime.now());
 
-        return taskRepository.save(existingTask);
+        Task savedTask = taskRepository.save(existingTask);
+
+        return mapToResponse(savedTask);
     }
 
     public void deleteTask(UUID id) {
+
         if (!taskRepository.existsById(id)) {
-            throw new RuntimeException("Task not found");
+            throw new TaskNotFoundException("Task not found");
         }
+
         taskRepository.deleteById(id);
     }
 
@@ -102,15 +124,17 @@ public class TaskService {
             System.out.println("Transition valid: " + valid);
 
             if (!valid) {
-                throw new IllegalStateException(
+                throw new InvalidTaskTransitionException(
                         "Invalid status transition from " + oldStatus + " to " + newStatus
                 );
             }
         }
     }
+
     // ── History Tracking ─────────────────────────────────────────────────────
 
     private void trackChanges(Task existing, Task updated) {
+
         trackField(existing.getId(), "TITLE",
                 existing.getTitle(), updated.getTitle());
 
@@ -119,22 +143,42 @@ public class TaskService {
 
         trackField(existing.getId(), "PRIORITY",
                 existing.getPriority() != null ? existing.getPriority().name() : null,
-                updated.getPriority()  != null ? updated.getPriority().name()  : null);
+                updated.getPriority() != null ? updated.getPriority().name() : null);
 
         trackField(existing.getId(), "STATUS",
                 existing.getStatus() != null ? existing.getStatus().name() : null,
-                updated.getStatus()  != null ? updated.getStatus().name()  : null);
+                updated.getStatus() != null ? updated.getStatus().name() : null);
     }
 
     private void trackField(UUID taskId, String field, String oldValue, String newValue) {
+
         if (!Objects.equals(oldValue, newValue)) {
+
             TaskHistory history = new TaskHistory();
             history.setTaskId(taskId);
             history.setFieldChanged(field);
             history.setOldValue(oldValue);
             history.setNewValue(newValue);
             history.setChangedAt(LocalDateTime.now());
+
             taskHistoryRepository.save(history);
         }
+    }
+
+    // ── DTO Mapping ──────────────────────────────────────────────────────────
+
+    private TaskResponse mapToResponse(Task task) {
+
+        TaskResponse response = new TaskResponse();
+
+        response.setId(task.getId());
+        response.setTitle(task.getTitle());
+        response.setDescription(task.getDescription());
+        response.setPriority(task.getPriority());
+        response.setStatus(task.getStatus());
+        response.setCreatedAt(task.getCreatedAt());
+        response.setUpdatedAt(task.getUpdatedAt());
+
+        return response;
     }
 }
