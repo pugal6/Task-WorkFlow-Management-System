@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>TaskFlow</title>
+    <link rel="stylesheet" href="style.css?v=8">
+</head>
+
+<body>
+
+<nav class="navbar">
+
+    <a href="index.html" class="brand-link">
+        <h1>TaskFlow</h1>
+    </a>
+
+    <div class="nav-links">
+        <a href="index.html" class="active">Home</a>
+        <a href="analytics.html">Analytics</a>
+    </div>
+
+</nav>
+
+<div class="container">
+
+    <div class="task-header">
+
+        <h2>Tasks</h2>
+
+        <div style="display:flex; gap:10px; align-items:center;">
+
+            <select id="taskFilter" onchange="renderTasks()">
+                <option value="ALL">All</option>
+                <option value="ACTIVE">Active</option>
+                <option value="DONE">Completed</option>
+                <option value="CANCELLED">Cancelled</option>
+            </select>
+
+            <button onclick="openCreateModal()">+ Create Task</button>
+
+        </div>
+
+    </div>
+
+
+    <h2>Status Overview</h2>
+
+    <div class="analytics-cards">
+
+        <div class="analytics-card">
+            <h3>TODO</h3>
+            <p id="todoCount">0</p>
+        </div>
+
+        <div class="analytics-card">
+            <h3>IN PROGRESS</h3>
+            <p id="progressCount">0</p>
+        </div>
+
+        <div class="analytics-card">
+            <h3>DONE</h3>
+            <p id="doneCount">0</p>
+        </div>
+
+        <div class="analytics-card">
+            <h3>CANCELLED</h3>
+            <p id="cancelledCount">0</p>
+        </div>
+
+    </div>
+
+
+    <div class="task-box">
+
+        <div id="taskList"></div>
+
+    </div>
+
+</div>
+
+
+<!-- CREATE TASK MODAL -->
+
+<div id="createModal" class="modal">
+
+    <div class="modal-content">
+
+        <h2>Create Task</h2>
+
+        <input id="title" placeholder="Task title">
+
+        <textarea id="description" placeholder="Task description"></textarea>
+
+        <select id="priority">
+            <option value="LOW">LOW</option>
+            <option value="MEDIUM">MEDIUM</option>
+            <option value="HIGH">HIGH</option>
+        </select>
+
+        <div id="titleError" class="error-text"></div>
+
+        <div class="modal-actions">
+            <button onclick="createTask()">Create</button>
+            <button class="cancel-btn" onclick="closeCreateModal()">Cancel</button>
+        </div>
+
+    </div>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>

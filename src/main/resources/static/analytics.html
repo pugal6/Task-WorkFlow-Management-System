@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Analytics</title>
+    <link rel="stylesheet" href="style.css?v=7">
+</head>
+
+<body>
+
+<nav class="navbar">
+
+    <a href="index.html" class="brand-link">
+        <h1>TaskFlow</h1>
+    </a>
+
+    <div class="nav-links">
+        <a href="index.html">Home</a>
+        <a href="analytics.html" class="active">Analytics</a>
+    </div>
+
+</nav>
+
+<div class="container">
+
+    <h2>Task Status Search</h2>
+
+    <div class="analytics-date">
+
+        <select id="statusInput">
+            <option value="TODO">TODO</option>
+            <option value="IN_PROGRESS">IN_PROGRESS</option>
+            <option value="DONE">DONE</option>
+            <option value="CANCELLED">CANCELLED</option>
+        </select>
+
+        <button onclick="fetchStatusCount()">Check</button>
+
+    </div>
+
+    <div id="statusResult"></div>
+
+    <h2 style="margin-top:40px;">Completed Tasks by Date</h2>
+
+    <div class="analytics-date">
+
+        <input type="date" id="dateInput">
+
+        <button onclick="fetchCompletedTasks()">Check</button>
+
+    </div>
+
+    <div id="completedResult"></div>
+
+</div>
+
+<script src="analytics.js"></script>
+
+</body>
+</html>
