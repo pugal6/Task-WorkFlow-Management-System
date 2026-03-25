@@ -1,5 +1,6 @@
 package com.pugal.TaskWorkFlowManagementSystem.repo;
 
+import com.pugal.TaskWorkFlowManagementSystem.model.Task;
 import com.pugal.TaskWorkFlowManagementSystem.model.TaskHistory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -24,4 +25,13 @@ AND th.changedAt < :endOfDay
             @Param("startOfDay") LocalDateTime startOfDay,
             @Param("endOfDay") LocalDateTime endOfDay
     );
+
+    @Query("""
+       SELECT th.taskId
+       FROM TaskHistory th
+       WHERE th.newValue = 'DONE'
+       AND th.changedAt >= :start
+       AND th.changedAt < :end
+       """)
+    List<UUID> findCompletedTaskIdsOnDate(LocalDateTime start, LocalDateTime end);
 }

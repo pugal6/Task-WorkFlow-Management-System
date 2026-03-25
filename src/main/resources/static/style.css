@@ -404,3 +404,19 @@ margin-top:6px;
 text-decoration:none;
 color:inherit;
 }
+
+#completedTasksList{
+margin-top:20px;
+}
+
+.task-card{
+border:1px solid #e0e0e0;
+padding:12px;
+margin-bottom:10px;
+border-radius:6px;
+background:#fafafa;
+}
+
+.task-card h4{
+margin:0 0 5px 0;
+}
